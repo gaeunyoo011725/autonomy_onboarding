@@ -1,0 +1,16 @@
+# Keep the Docker build context small — only ROS/ sources are COPYed in, and
+# these are local build artifacts that must not leak into the image.
+.git
+venv/
+install/
+build/
+log/
+.claude/
+.vscode/
+
+# Vendored Stonefish core: ship sources, not local build output.
+ROS/external/stonefish/build/
+ROS/external/stonefish/install/
+ROS/external/stonefish/log/
+ROS/external/stonefish/docs/html/
+ROS/external/stonefish/docs/latex/
