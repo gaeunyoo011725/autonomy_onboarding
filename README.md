@@ -68,8 +68,6 @@ ros2 launch bringup stonefish_no_gui.py
 
 ```bash
 ros2 topic list
-#   /my_thruster_setpoints   (input  — you publish)
-#   /my_thruster_state       (output — thruster telemetry)
 
 # To watch telemetry:
 ros2 topic echo /my_thruster_state
@@ -79,13 +77,45 @@ ros2 topic pub /my_thruster_setpoints std_msgs/msg/Float64MultiArray \
   "{data: [0.4, 0.4, 0.4, 0.4, 0.0, 0.0]}"
 ```
 
-- **Input** `/my_thruster_setpoints` — `std_msgs/msg/Float64MultiArray`, 6 values
-  in `[-1, 1]` (`0` = stop, `±1` = full).
-- **Output** `/my_thruster_state` — `stonefish_ros2/msg/ThrusterState`.
+| Topic | Direction | Type |
+|---|---|---|
+| `/my_thruster_setpoints` | input (you publish) | `std_msgs/msg/Float64MultiArray` — 6 values in `[-1, 1]` |
+| `/my_thruster_state` | output | `stonefish_ros2/msg/ThrusterState` |
+| `/bluerov/odometry` | output | `nav_msgs/msg/Odometry` (pose/twist in `world_ned`) |
+| `/bluerov/imu` | output | `sensor_msgs/msg/Imu` |
+| `/bluerov/pressure` | output | `sensor_msgs/msg/FluidPressure` |
+| `/bluerov/dvl` (+ `/dvl/altitude`) | output | `stonefish_ros2/msg/DVL` (+ `sensor_msgs/msg/Range`) |
+| `/tf` | output | `tf2_msgs/msg/TFMessage` (`world_ned` → `BLUEROV2/base_link`) |
 
 ---
 
-## 4. BlueROV2 model — thrusters
+## 4. Visualize in Foxglove (no GPU needed)
+
+Foxglove Studio shows the robot pose, sensors, TF and plots over a WebSocket —
+works from any OS, including against the Docker container, with no display/GPU.
+It shows the ROS *data*, not Stonefish's rendered ocean.
+
+**Run the sim with the Foxglove Bridge:**
+
+```bash
+# Host:
+ros2 launch bringup stonefish_foxglove.py
+
+# Docker (publish the bridge port):
+docker run --rm -it -p 8765:8765 stonefish-sim ros2 launch bringup stonefish_foxglove.py
+```
+
+**Connect:** open [Foxglove Studio](https://foxglove.dev/download) (app or
+browser) → *Open connection* → **Foxglove WebSocket** → `ws://localhost:8765`.
+
+Useful panels: a **3D** panel (fixed frame `world_ned`) shows the robot moving
+via `/tf` and `/bluerov/odometry`; **Plot** panels show IMU / pressure / DVL /
+thruster state. `foxglove_bridge` is installed automatically (Docker via
+`rosdep`; host via `setup.sh`).
+
+---
+
+## 5. BlueROV2 model — thrusters
 
 Robot file is defined in [ROS/bringup/data/BlueROV2.scn](ROS/bringup/data/BlueROV2.scn).
 Mass 12.5 kg, ~12.7 L displaced (slightly positive buoyancy).

@@ -3,7 +3,7 @@
 # Host setup for the Stonefish underwater simulation (GUI-capable).
 #
 # Installs Stonefish core + all ROS dependencies and builds this workspace so
-# you can run the graphical simulator (stonefish_gpu.py) directly on the host.
+# you can run the graphical simulator (stonefish_gui.py) directly on the host.
 # On WSL2, WSLg provides the display/GPU, so the 3D window "just works" after
 # this script completes.
 #
@@ -12,7 +12,7 @@
 # Usage:
 #   ./setup.sh
 #   source install/setup.bash
-#   ros2 launch bringup stonefish_gpu.py
+#   ros2 launch bringup stonefish_gui.py
 #
 set -euo pipefail
 
@@ -71,7 +71,7 @@ cat <<EOF
 >>> Done. To run the simulation:
 
     source install/setup.bash
-    ros2 launch bringup stonefish_gpu.py      # 3D GUI window
-    ros2 launch bringup stonefish_no_gpu.py   # headless (physics + ROS topics)
+    ros2 launch bringup stonefish_gui.py      # 3D GUI window
+    ros2 launch bringup stonefish_no_gui.py   # headless (physics + ROS topics)
 
 EOF

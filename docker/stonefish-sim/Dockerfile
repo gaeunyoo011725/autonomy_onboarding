@@ -61,7 +61,12 @@ RUN source /opt/ros/jazzy/setup.bash \
 COPY docker/stonefish-sim/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Foxglove Bridge WebSocket (used by the stonefish_foxglove.py launch).
+EXPOSE 8765
+
 ENTRYPOINT ["/entrypoint.sh"]
-# Default: run the headless simulator. Override to get a shell, e.g.
-#   docker run --rm -it stonefish-sim bash
-CMD ["ros2", "launch", "bringup", "stonefish_no_gpu.py"]
+# Default: run the headless simulator. Override the command to change behaviour:
+#   docker run --rm -it stonefish-sim bash                                   # shell
+#   docker run --rm -it -p 8765:8765 stonefish-sim \
+#       ros2 launch bringup stonefish_foxglove.py                            # + Foxglove Bridge
+CMD ["ros2", "launch", "bringup", "stonefish_no_gui.py"]
