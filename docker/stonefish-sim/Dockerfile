@@ -34,6 +34,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libglu1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# --- Nav2 dependencies -------------------------------------------------------
+# These are also resolved automatically by the `rosdep install` step below (they
+# are declared in the trimmed Nav2 packages' package.xml). They are listed here
+# explicitly for clarity and to cache them in an earlier layer.
+#   ROS msgs/libs : geographic_msgs, nav_2d_*, behaviortree_cpp, bond*, test_msgs
+#   foxglove_bridge : ROS visualization bridge (also a bringup dep)
+#   system libs   : xtensor/xsimd/omp (nav2_mppi_controller), graphicsmagick (nav2_map_server)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ros-jazzy-geographic-msgs \
+        ros-jazzy-nav-2d-msgs \
+        ros-jazzy-nav-2d-utils \
+        ros-jazzy-behaviortree-cpp \
+        ros-jazzy-bond \
+        ros-jazzy-bondcpp \
+        ros-jazzy-test-msgs \
+        ros-jazzy-foxglove-bridge \
+        libxtensor-dev \
+        libxsimd-dev \
+        libomp-dev \
+        libgraphicsmagick++1-dev \
+        graphicsmagick-libmagick-dev-compat \
+    && rm -rf /var/lib/apt/lists/*
+
 # --- Copy sources ------------------------------------------------------------
 WORKDIR /ros2_ws
 # Vendored Stonefish core + the ROS packages all live under ROS/.
