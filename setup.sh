@@ -59,7 +59,17 @@ rosdep update
 cd "${WS_DIR}"
 # shellcheck disable=SC1090
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
-rosdep install --from-paths ROS --ignore-src -r -y || true
+# Install declared dependencies. Do NOT swallow failures — a missing dep (e.g.
+# foxglove_bridge) should stop here with a clear error rather than surface later
+# as a broken launch. (set -e aborts on non-zero.)
+rosdep install --from-paths ROS --ignore-src -r -y
+
+# Sanity-check the visualization dependency is actually resolvable/installed.
+if ! rosdep resolve foxglove_bridge >/dev/null 2>&1; then
+    echo "ERROR: foxglove_bridge could not be resolved by rosdep." >&2
+    echo "       Install it manually: sudo apt install ros-${ROS_DISTRO}-foxglove-bridge" >&2
+    exit 1
+fi
 
 # --- 4. Build the workspace --------------------------------------------------
 echo ">>> Building the workspace with colcon..."
