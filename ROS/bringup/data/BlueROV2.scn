@@ -156,22 +156,27 @@
             </thrust_model>
         </actuator>
 
-        <!-- Sensors -->
+        <!-- Sensors. Each sensor publishes to ROS only if it has a
+             <ros_publisher topic="..."/> child (see stonefish_ros2 parser).
+             These topics are what Foxglove / rviz visualize. -->
         <sensor name="dynamics" type="odometry" rate="30.0">
             <link name="Vehicle"/>
             <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            <ros_publisher topic="/bluerov/odometry"/>
         </sensor>
 
         <sensor name="pressure" type="pressure" rate="5.0">
             <link name="Vehicle"/>
             <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
             <noise pressure="5.0"/>
+            <ros_publisher topic="/bluerov/pressure"/>
         </sensor>
 
         <sensor name="imu_filter" type="imu" rate="20.0">
             <history samples="1000"/>
             <link name="Vehicle"/>
             <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            <ros_publisher topic="/bluerov/imu"/>
         </sensor>
 
         <sensor name="dvl" type="dvl" rate="20.0">
@@ -181,11 +186,12 @@
             <specs beam_angle="30.0"/>
             <range velocity="9.0 9.0 9.0" altitude_min="0.5" altitude_max="81.0"/>
             <noise velocity="0.0015" altitude="0.001"/>
+            <ros_publisher topic="/bluerov/dvl" altitude_topic="/bluerov/dvl/altitude"/>
         </sensor>
 
         <!-- Forward-looking camera and lights are only available when running
-             with rendering (stonefish_gpu.py); the console/headless launch
-             (stonefish_no_gpu.py) does not support them. Uncomment when using
+             with rendering (stonefish_gui.py); the console/headless launch
+             (stonefish_no_gui.py) does not support them. Uncomment when using
              the GPU launch file.
         <sensor name="camera" type="camera" rate="10.0">
             <link name="Vehicle"/>
