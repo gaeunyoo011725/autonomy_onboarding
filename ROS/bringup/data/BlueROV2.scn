@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<!--
+    BlueROV2 (6-thruster vectored configuration) for Stonefish.
+
+    Intended to be included from a scenario that already defines the materials
+    (Neutral, Aluminium, ...) and looks (dark, propeller, ...) it references,
+    e.g. scenarios/underwater.scn:
+
+        <include file="data/BlueROV2.scn">
+            <arg name="robot_name" value="BLUEROV2"/>
+            <arg name="robot_position" value="0.0 0.0 1.0"/>
+        </include>
+
+    Body frame convention: x = forward, y = starboard, z = down.
+-->
+<scenario>
+    <robot name="$(arg robot_name)" fixed="false" self_collisions="false">
+        <!--
+            Base link. Physics/buoyancy is computed from a lightweight box hull
+            (BlueROV2_phy.obj); the detailed BlueROV2.obj is used for rendering
+           The visual mesh is authored in millimetres, Y-up and off-centre,
+        -->
+        <base_link name="Vehicle" type="model" physics="submerged" buoyant="true">
+            <physical>
+                <mesh filename="$(find bringup)/data/BlueROV2_phy.obj" scale="1.0"/>
+                <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            </physical>
+            <visual>
+                <mesh filename="$(find bringup)/data/BlueROV2.obj" scale="0.001"/>
+                <origin rpy="-1.5708 0.0 1.5708" xyz="-0.1343 -0.1595 0.114"/>
+            </visual>
+            <material name="Neutral"/>
+            <look name="dark"/>
+            <mass value="12.5"/>
+        </base_link>
+
+        <!-- Horizontal vectored thrusters (surge/sway/yaw), angled at 45 deg. -->
+        <actuator name="ThrusterFrontPort" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 0.785" xyz="0.15 -0.11 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="true">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="ThrusterFrontStarboard" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 -0.785" xyz="0.15 0.11 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="false">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="ThrusterRearPort" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 2.356" xyz="-0.15 -0.11 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="false">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="ThrusterRearStarboard" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 -2.356" xyz="-0.15 0.11 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="true">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <!-- Vertical thrusters (heave/roll/pitch), axis along body z. -->
+        <actuator name="ThrusterVertPort" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 -0.12 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="true">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <actuator name="ThrusterVertStarboard" type="thruster">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 0.12 0.0"/>
+            <specs max_setpoint="${1000.0/60.0*2.0*pi}" inverted_setpoint="true" normalized_setpoint="true"/>
+            <propeller diameter="0.1" right="false">
+                <mesh filename="$(find bringup)/data/propeller.obj" scale="0.55"/>
+                <material name="Neutral"/>
+                <look name="propeller"/>
+            </propeller>
+            <rotor_dynamics type="mechanical_pi">
+                <kp value="1.0"/>
+                <ki value="0.5"/>
+                <ilimit value="2.0"/>
+            </rotor_dynamics>
+            <thrust_model type="fluid_dynamics">
+                <thrust_coeff forward="0.48" reverse="0.48"/>
+                <torque_coeff value="0.05"/>
+            </thrust_model>
+        </actuator>
+
+        <!-- Sensors -->
+        <sensor name="dynamics" type="odometry" rate="30.0">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        </sensor>
+
+        <sensor name="pressure" type="pressure" rate="5.0">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            <noise pressure="5.0"/>
+        </sensor>
+
+        <sensor name="imu_filter" type="imu" rate="20.0">
+            <history samples="1000"/>
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        </sensor>
+
+        <sensor name="dvl" type="dvl" rate="20.0">
+            <history samples="1000"/>
+            <link name="Vehicle"/>
+            <origin rpy="3.1416 0.0 0.0" xyz="0.0 0.0 0.1"/>
+            <specs beam_angle="30.0"/>
+            <range velocity="9.0 9.0 9.0" altitude_min="0.5" altitude_max="81.0"/>
+            <noise velocity="0.0015" altitude="0.001"/>
+        </sensor>
+
+        <!-- Forward-looking camera and lights are only available when running
+             with rendering (stonefish_gpu.py); the console/headless launch
+             (stonefish_no_gpu.py) does not support them. Uncomment when using
+             the GPU launch file.
+        <sensor name="camera" type="camera" rate="10.0">
+            <link name="Vehicle"/>
+            <origin rpy="0.0 0.0 1.571" xyz="0.25 0.0 0.0"/>
+            <specs resolution_x="1280" resolution_y="720" horizontal_fov="80.0"/>
+        </sensor>
+
+        <light name="Front">
+            <link name="Vehicle"/>
+            <specs illuminance="20000.0" radius="0.05"/>
+            <color temperature="5000.0"/>
+            <origin xyz="0.25 0.0 0.0" rpy="0.0 1.571 0.0"/>
+        </light>
+        -->
+
+        <!-- ROS2 interface (see stonefish_ros2 docs). No servos on this vehicle,
+             so only the thruster topics carry data. -->
+        <ros_publisher thrusters="/my_thruster_state"/>
+        <ros_subscriber thrusters="/my_thruster_setpoints"/>
+
+        <world_transform rpy="0.0 0.0 0.0" xyz="$(arg robot_position)"/>
+    </robot>
+</scenario>

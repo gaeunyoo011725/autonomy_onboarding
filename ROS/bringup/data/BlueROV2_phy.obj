@@ -1,0 +1,33 @@
+# Lightweight collision/hydrodynamics hull for the BlueROV2.
+# The visual mesh (BlueROV2.obj, ~973k verts) is far too heavy to use for the
+# physics/buoyancy integration that Stonefish runs every simulation step, so a
+# simple box approximating the vehicle's displaced volume is used instead.
+# Body frame: x=forward, y=starboard, z=down.  Dimensions 0.35 x 0.28 x 0.13 m
+# => volume ~0.0127 m^3 => ~12.7 kgf of buoyancy (tuned against mass in the .scn).
+o BlueROV2_hull
+v -0.175 -0.140 -0.065
+v  0.175 -0.140 -0.065
+v  0.175  0.140 -0.065
+v -0.175  0.140 -0.065
+v -0.175 -0.140  0.065
+v  0.175 -0.140  0.065
+v  0.175  0.140  0.065
+v -0.175  0.140  0.065
+vn  0.0  0.0 -1.0
+vn  0.0  0.0  1.0
+vn -1.0  0.0  0.0
+vn  1.0  0.0  0.0
+vn  0.0 -1.0  0.0
+vn  0.0  1.0  0.0
+f 1//1 2//1 3//1
+f 1//1 3//1 4//1
+f 5//2 8//2 7//2
+f 5//2 7//2 6//2
+f 1//3 4//3 8//3
+f 1//3 8//3 5//3
+f 2//4 6//4 7//4
+f 2//4 7//4 3//4
+f 1//5 5//5 6//5
+f 1//5 6//5 2//5
+f 4//6 3//6 7//6
+f 4//6 7//6 8//6
