@@ -47,7 +47,11 @@
 		<look name="propeller" gray="1.0" roughness="0.3" texture="propeller_tex.png"/>
 		<look name="duct" gray="0.1" roughness="0.4" metalness="0.5"/>
 		<look name="dark" rgb="0.2 0.15 0.1" roughness="0.6" metalness="0.8"/>
-		<look name="pipe" rgb="1.0 0.2 0.0" roughness="0.2" metalness="0.3"/> 
+		<look name="pipe" rgb="1.0 0.2 0.0" roughness="0.2" metalness="0.3"/>
+		<!-- BlueROV body: bright albedo + low metalness so it stays visible in
+		     dim underwater lighting (a metallic surface just reflects the dark
+		     water and reads as black). -->
+		<look name="bluerov" rgb="0.95 0.45 0.05" roughness="0.5" metalness="0.05"/>
 	</looks>
 
 	<static name="Bottom" type="plane">

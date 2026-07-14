@@ -30,7 +30,7 @@
                 <origin rpy="-1.5708 0.0 1.5708" xyz="-0.1343 -0.1595 0.114"/>
             </visual>
             <material name="Neutral"/>
-            <look name="dark"/>
+            <look name="bluerov"/>
             <mass value="12.5"/>
         </base_link>
 
