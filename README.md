@@ -1,106 +1,118 @@
-# Autonomy Onboarding — Stonefish Underwater Simulation
+# MISO Autonomy Onboarding
 
-A ROS 2 (Jazzy) workspace that runs a BlueROV2 in the [Stonefish](https://github.com/patrykcieslak/stonefish)
-marine simulator.
+BlueROV2 underwater simulation on [Stonefish](https://github.com/patrykcieslak/stonefish)
+(ROS 2 Jazzy). Stonefish core and `stonefish_ros2` are vendored in-tree, so a
+plain `git clone` is self-contained — no submodules, no external downloads.
 
-Everything needed to build and run is **vendored in this repository** — there are
-no external clones or submodules to fetch. A plain `git clone` gives you the
-complete, self-contained system:
+There are two ways to run it:
 
-```
-ROS/
-├── bringup/                # scenarios, launch files, robot + mesh data
-└── external/
-    ├── stonefish/          # Stonefish core (C++ simulation library, vendored)
-    └── stonefish_ros2/     # ROS 2 wrapper for Stonefish (vendored)
-docker/stonefish-sim/       # reproducible headless build/run
-setup.sh                    # host build for the 3D GUI
-```
-
-## Which way do I run it?
-
-| Goal | Use | Window? |
-|------|-----|---------|
-| Reproducible, headless (physics + ROS topics, CI) | **Docker** | no |
-| See the 3D world / drive the robot | **Host + WSLg** (`setup.sh`) | yes |
-
-Stonefish's graphical mode needs **OpenGL 4.3+ and a display**. On WSL2, WSLg
-provides both to the host directly, so the GUI is easiest on the host. In a
-container the GUI requires fragile GPU/display passthrough, so Docker here is
-used for the **headless** path only.
+- **Docker** — headless (physics + ROS topics, no window). Works on any OS with
+  Docker; needs nothing else installed.
+- **Host** — full 3D GUI. Needs Ubuntu 24.04 + ROS 2 Jazzy (on Windows use WSL2).
 
 ---
 
-## Option A — Docker (headless, reproducible)
-
-Builds Stonefish core + the workspace into an image and runs the console simulator.
-No host setup required beyond Docker.
+## 1. Install
 
 ```bash
-# from the repo root
+git clone <your-repo-url> autonomy_onboarding
+cd autonomy_onboarding
+```
+
+**Docker path:** install [Docker Engine](https://docs.docker.com/engine/install/).
+
+**Host (GUI) path:** install **ROS 2 Jazzy** on Ubuntu 24.04
+([guide](https://docs.ros.org/en/jazzy/Installation.html)). All other
+dependencies (Stonefish libs, `colcon`, `rosdep`) are handled by `setup.sh` in
+the next step.
+
+---
+
+## 2. Build
+
+**Docker:**
+
+```bash
 docker build -f docker/stonefish-sim/Dockerfile -t stonefish-sim .
-docker run --rm -it stonefish-sim
 ```
 
-This launches `stonefish_no_gpu.py`: no window, but it runs the physics and
-publishes the ROS 2 topics (e.g. `/my_thruster_setpoints`, `/my_thruster_state`).
-To get a shell instead:
+**Host:** builds the vendored Stonefish core + the ROS workspace (idempotent):
 
 ```bash
-docker run --rm -it stonefish-sim bash
-```
-
-## Option B — Host with the 3D GUI (WSL2 / WSLg)
-
-Installs dependencies, builds the vendored Stonefish core, and builds the workspace.
-
-```bash
-# from the repo root
 ./setup.sh
-source install/setup.bash
-ros2 launch bringup stonefish_gpu.py       # 3D GUI window
-# or, headless on the host:
-ros2 launch bringup stonefish_no_gpu.py
 ```
-
-`setup.sh` is idempotent: if `libStonefish.so` is already installed it skips the
-core build.
 
 ---
 
-## The simulation
+## 3. Launch the sim + ROS commands
 
-- **Scenario:** [ROS/bringup/scenarios/underwater.scn](ROS/bringup/scenarios/underwater.scn)
-  — ocean, seabed, a buoy, a cable, and the robot.
-- **Robot:** [ROS/bringup/data/BlueROV2.scn](ROS/bringup/data/BlueROV2.scn)
-  — a BlueROV2 (6-thruster vectored config). Physics/buoyancy come from a
-  lightweight box hull ([BlueROV2_phy.obj](ROS/bringup/data/BlueROV2_phy.obj));
-  the detailed `BlueROV2.obj` is used for rendering only.
+**Docker (headless):**
+Install ROS2 Jazzy on your local machine:
+```bash
+docker run --rm -it --name sim stonefish-sim
+# in another terminal, work inside the container (host has no ROS):
+docker exec -it sim bash
+source /opt/ros/jazzy/setup.bash && source /ros2_ws/install/setup.bash
+```
 
-### Controlling the thrusters
+**Host:**
+If you already have ROS2 Jazzy installed:
+```bash
+source install/setup.bash                    # in every new terminal
+ros2 launch bringup stonefish_gui.py         # 3D GUI window
+# or headless:
+ros2 launch bringup stonefish_no_gui.py
+```
 
-Publish 6 normalized setpoints in `[-1, 1]` (one per thruster):
+**Robot ROS Topics** (once sourced):
 
 ```bash
+ros2 topic list
+#   /my_thruster_setpoints   (input  — you publish)
+#   /my_thruster_state       (output — thruster telemetry)
+
+# To watch telemetry:
+ros2 topic echo /my_thruster_state
+
+# To drive the 6 thrusters (values in [-1, 1]), for example,
 ros2 topic pub /my_thruster_setpoints std_msgs/msg/Float64MultiArray \
-  "{data: [0.5, 0.5, 0.5, 0.5, 0.0, 0.0]}"
+  "{data: [0.4, 0.4, 0.4, 0.4, 0.0, 0.0]}"
 ```
 
-Thruster telemetry is published on `/my_thruster_state`.
-
-### GUI-only features
-
-The forward camera and lights in `BlueROV2.scn` are commented out because the
-console (no-GPU) launch rejects them. When using `stonefish_gpu.py`, uncomment
-that block to enable them.
+- **Input** `/my_thruster_setpoints` — `std_msgs/msg/Float64MultiArray`, 6 values
+  in `[-1, 1]` (`0` = stop, `±1` = full).
+- **Output** `/my_thruster_state` — `stonefish_ros2/msg/ThrusterState`.
 
 ---
 
-## Requirements
+## 4. BlueROV2 model — thrusters
 
-- **ROS 2 Jazzy** (`setup.sh` checks for `/opt/ros/jazzy`).
-- For the GUI: a GPU with **OpenGL 4.3+** and a display (WSLg on WSL2).
-- For Docker: Docker Engine.
+Robot file is defined in [ROS/bringup/data/BlueROV2.scn](ROS/bringup/data/BlueROV2.scn).
+Mass 12.5 kg, ~12.7 L displaced (slightly positive buoyancy).
+Body frame: **x = forward, y = starboard, z = down**.
 
-Stonefish core build dependencies (`libglm-dev`, `libsdl2-dev`, `libfreetype6-dev`,
-plus GL/GLU) are installed automatically by `setup.sh` and the Dockerfile.
+Six thrusters, **vectored** config. The list order = the `/my_thruster_setpoints`
+array index:
+
+| Index | Thruster | Orientation | Drives |
+|:---:|---|---|---|
+| 0 | `ThrusterFrontPort`      | horizontal, +45°  | surge / sway / yaw |
+| 1 | `ThrusterFrontStarboard`| horizontal, −45°  | surge / sway / yaw |
+| 2 | `ThrusterRearPort`      | horizontal, +135° | surge / sway / yaw |
+| 3 | `ThrusterRearStarboard` | horizontal, −135° | surge / sway / yaw |
+| 4 | `ThrusterVertPort`      | vertical          | heave / roll / pitch |
+| 5 | `ThrusterVertStarboard` | vertical          | heave / roll / pitch |
+
+```bash
+# forward/horizontal   → the four vectored thrusters (0–3)
+ros2 topic pub /my_thruster_setpoints std_msgs/msg/Float64MultiArray "{data: [0.5,0.5,0.5,0.5,0,0]}"
+# descend/ascend       → the two vertical thrusters (4–5)
+ros2 topic pub /my_thruster_setpoints std_msgs/msg/Float64MultiArray "{data: [0,0,0,0,0.5,0.5]}"
+# yaw in place         → oppose front vs rear
+ros2 topic pub /my_thruster_setpoints std_msgs/msg/Float64MultiArray "{data: [0.5,-0.5,-0.5,0.5,0,0]}"
+```
+
+> The detailed `BlueROV2.obj` is used for rendering only; physics/buoyancy use a
+> lightweight box hull ([BlueROV2_phy.obj](ROS/bringup/data/BlueROV2_phy.obj)).
+> A forward camera and lights are defined but commented out (GPU-only; the
+> headless launch rejects them).
